@@ -1,22 +1,44 @@
 import React, { useState } from "react";
-// A feature of this Hook is the ability to initialize the values of the state. In this case, we want to clear the input fields on the component loading.
+import { validateEmail } from "../../utils/helpers";
 
+// A feature of this Hook is the ability to initialize the values of the state. In this case, we want to clear the input fields on the component loading.
 function ContactForm() {
+  const [errorMessage, setErrorMessage] = useState("");
   const [formState, setFormState] = useState({
     name: "",
     email: "",
     message: "",
   });
   const { name, email, message } = formState;
+
   //  This function will sync the internal state of the component formState with the user input from the DOM. The onChange event listener will ensure that the handleChange function fires whenever a keystroke is typed into the input field for name.
   function handleChange(e) {
-    setFormState({ ...formState, [e.target.name]: e.target.value });
+    // validating the input
+    if (e.target.name === "email") {
+      const isValid = validateEmail(e.target.value);
+      console.log(isValid);
+      // isValid conditional statement
+      if (!isValid) {
+        setErrorMessage("Your email is invalid.");
+      } else {
+        if (!e.target.value.length) {
+          setErrorMessage(`${e.target.name} is required.`);
+        } else {
+          setErrorMessage("");
+        }
+      }
+      console.log("errorMessage", errorMessage);
+    }
+    if (!errorMessage) {
+      setFormState({ ...formState, [e.target.name]: e.target.value });
+    }
   }
-
+  // this function will fire off when the submit button is clicked
   function handleSubmit(e) {
     e.preventDefault();
     console.log(formState);
   }
+
   return (
     <section>
       <h1>Contact me</h1>
@@ -26,7 +48,7 @@ function ContactForm() {
           <input
             type="text"
             defaultValue={name}
-            onChange={handleChange}
+            onBlur={handleChange}
             name="name"
           />
         </div>
@@ -36,7 +58,7 @@ function ContactForm() {
             type="email"
             defaultValue={email}
             name="email"
-            onChange={handleChange}
+            onBlur={handleChange}
           />
         </div>
         <div>
@@ -44,10 +66,15 @@ function ContactForm() {
           <textarea
             name="message"
             defaultValue={message}
-            onChange={handleChange}
+            onBlur={handleChange}
             rows="5"
           />
         </div>
+        {errorMessage && (
+          <div>
+            <p className="error-text">{errorMessage}</p>
+          </div>
+        )}
         <button type="submit">Submit</button>
       </form>
     </section>
